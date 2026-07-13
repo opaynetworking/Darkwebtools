@@ -1,0 +1,2327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Continue checkout</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        :root {
+            --primary: #4c6ef5;
+            --secondary: #3bc9db;
+            --success: #40c057;
+            --danger: #fa5252;
+            --dark: #343a40;
+            --light: #f8f9fa;
+            --gray: #adb5bd;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+        
+        /* Loader Styles */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #4c6ef5 0%, #3bc9db 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+        }
+        
+        .loader-circle {
+            width: 80px;
+            height: 80px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .loader-text {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 480px;
+            width: 100%;
+            background-color: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            position: relative;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .logo img {
+            height: 32px;
+            border-radius: 6px;
+        }
+        
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        .user-email {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .flag-container {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .flag {
+            width: 32px;
+            height: 22px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: var(--transition);
+        }
+        
+        .flag:hover {
+            transform: scale(1.1);
+        }
+       
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 30px;
+            background-color: white;
+            min-width: 180px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-radius: 10px;
+            z-index: 100;
+            overflow: hidden;
+            animation: dropdownFade 0.3s ease;
+        }
+        
+        @keyframes dropdownFade {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .dropdown-content a {
+            color: var(--dark);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: var(--transition);
+            border-bottom: 1px solid #f1f3f5;
+        }
+        
+        .dropdown-content a:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-content a:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .dropdown-content a img {
+            width: 25px;
+            height: 17px;
+            border-radius: 2px;
+        }
+        
+        /* Product Section */
+        .product-section {
+            padding: 25px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background-color: white;
+        }
+        
+        .product-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 5px 12px rgba(0,0,0,0.08);
+        }
+        
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .product-details h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+        
+        .product-price {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .product-price::before {
+            content: "$";
+            font-size: 20px;
+        }
+        
+        /* Form Section */
+        .form-section {
+            padding: 25px;
+            background-color: white;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: var(--primary);
+        }
+        
+        .section-subtitle {
+            color: var(--gray);
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 22px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+            font-size: 15px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: var(--transition);
+            background-color: #f8f9fa;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.1);
+        }
+        
+        .phone-input {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .phone-input select {
+            flex: 0 0 120px;
+        }
+        
+        .phone-input input {
+            flex: 1;
+        }
+        
+        /* Payment Method */
+        .payment-method {
+            margin: 30px 0;
+        }
+        
+        .payment-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .payment-option {
+            flex: 1;
+            padding: 18px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            background: white;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .payment-option:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .payment-option.selected {
+            border-color: var(--primary);
+            background-color: rgba(76, 110, 245, 0.05);
+            color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(76, 110, 245, 0.2);
+        }
+        
+        .payment-icon {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .crypto-icon {
+            color: #8a2be2;
+        }
+        
+        .bank-icon {
+            color: var(--primary);
+        }
+        
+        .coupon-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .coupon-input {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .coupon-input input {
+            flex: 1;
+            padding: 12px 15px;
+        }
+        
+        .coupon-btn {
+            padding: 12px 20px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .coupon-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(76, 110, 245, 0.3);
+        }
+        
+        /* Order Summary */
+        .order-summary {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 22px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed #dee2e6;
+        }
+        
+        .summary-row:last-of-type {
+            border-bottom: none;
+        }
+        
+        .summary-row.total {
+            font-weight: 700;
+            font-size: 20px;
+            border-top: 2px solid #dee2e6;
+            padding-top: 15px;
+            margin-top: 5px;
+        }
+        
+        /* Access Message */
+        .access-message {
+            text-align: center;
+            margin: 25px 0;
+            color: var(--success);
+            font-weight: 500;
+            background-color: rgba(64, 192, 87, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--success);
+        }
+        
+        /* Pay Now Button */
+        .pay-now-btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(76, 110, 245, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .pay-now-btn:disabled {
+            background: #adb5bd;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        
+        .pay-now-btn:not(:disabled):hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(76, 110, 245, 0.5);
+        }
+        
+        .pay-now-btn i {
+            font-size: 20px;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 13px;
+            border-top: 1px solid #e9ecef;
+            margin-top: 30px;
+            background-color: #f8f9fa;
+        }
+        
+        /* Alert Styles */
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(150%);
+            transition: transform 0.4s ease;
+        }
+        
+        .alert.show {
+            transform: translateX(0);
+        }
+        
+        .alert i {
+            font-size: 20px;
+        }
+        
+        /* Bank Payment Page Styles */
+        #bankPaymentPage {
+            display: none;
+            max-width: 480px;
+            width: 100%;
+            background-color: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .bank-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: white;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .bank-header-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .bank-user-email {
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+        
+        .bank-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2e7d32;
+        }
+        
+        .bank-content {
+            padding: 20px;
+        }
+        
+        .bank-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark);
+            text-align: center;
+        }
+        
+        .bank-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .info-group {
+            margin-bottom: 15px;
+        }
+        
+        .info-label {
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .transfer-instruction {
+            text-align: center;
+            margin: 20px 0;
+            color: var(--dark);
+            font-size: 15px;
+        }
+        
+        .countdown {
+            color: var(--success);
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .bank-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        .sent-money-btn {
+            padding: 14px;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .sent-money-btn:hover {
+            background-color: #2f9e44;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(64, 192, 87, 0.3);
+        }
+        
+        .cancel-payment-btn {
+            padding: 14px;
+            background-color: transparent;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .cancel-payment-btn:hover {
+            background-color: var(--danger);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Payment Confirmation Page Styles */
+        #paymentConfirmationPage {
+            display: none;
+            max-width: 480px;
+            width: 100%;
+            background-color: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .confirmation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: white;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .confirmation-header-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .confirmation-user-email {
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+        
+        .confirmation-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2e7d32;
+        }
+        
+        .confirmation-content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .confirmation-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .confirmation-message {
+            color: var(--gray);
+            margin-bottom: 25px;
+            font-size: 15px;
+        }
+        
+        .status-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 25px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .status-label {
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 8px;
+        }
+        
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .sent-icon {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .received-icon {
+            background-color: #e9ecef;
+            color: var(--gray);
+        }
+        
+        .waiting-time {
+            margin: 25px 0;
+            color: var(--dark);
+            font-size: 15px;
+        }
+        
+        .waiting-countdown {
+            color: var(--success);
+            font-weight: 700;
+            font-size: 18px;
+            margin-top: 5px;
+        }
+        
+        .confirmation-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        .show-account-btn {
+            padding: 14px;
+            background-color: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .show-account-btn:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .confirmation-cancel-btn {
+            padding: 14px;
+            background-color: transparent;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .confirmation-cancel-btn:hover {
+            background-color: var(--danger);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .security-footer {
+            text-align: center;
+            padding: 15px;
+            color: var(--gray);
+            font-size: 12px;
+            border-top: 1px solid #e9ecef;
+            margin-top: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        /* Crypto Payment Page Styles */
+        #cryptoPaymentPage {
+            display: none;
+            max-width: 480px;
+            width: 100%;
+            background-color: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .crypto-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: white;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .crypto-header-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .crypto-user-email {
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+        
+        .crypto-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2e7d32;
+        }
+        
+        .crypto-content {
+            padding: 20px;
+        }
+        
+        .crypto-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark);
+            text-align: center;
+        }
+        
+        .crypto-subtitle {
+            text-align: center;
+            color: var(--gray);
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        
+        .crypto-amount-info {
+            background: linear-gradient(135deg, #4c6ef5 0%, #3bc9db 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .usd-amount {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .crypto-conversion {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+        }
+        
+        .crypto-option {
+            text-align: center;
+        }
+        
+        .crypto-amount-value {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .crypto-amount-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .rate-update {
+            font-size: 12px;
+            margin-top: 10px;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .crypto-tabs {
+            display: flex;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 25px;
+        }
+        
+        .crypto-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .crypto-tab.active {
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .crypto-tab.active.btc-tab {
+            color: #f7931a;
+        }
+        
+        .crypto-tab.active.usdt-tab {
+            color: #26a17b;
+        }
+        
+        .crypto-wallet {
+            display: none;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .crypto-wallet.active {
+            display: block;
+        }
+        
+        .wallet-label {
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 10px;
+        }
+        
+        .wallet-address {
+            font-size: 16px;
+            font-weight: 600;
+            background-color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            word-break: break-all;
+            border: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .copy-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: var(--transition);
+        }
+        
+        .copy-btn:hover {
+            background-color: #3a5ce4;
+        }
+        
+        .qr-code {
+            width: 180px;
+            height: 180px;
+            margin: 15px auto;
+            background-color: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .qr-code img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .crypto-instruction {
+            text-align: center;
+            margin: 20px 0;
+            color: var(--dark);
+            font-size: 15px;
+        }
+        
+        .crypto-countdown {
+            color: var(--success);
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .crypto-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        .sent-crypto-btn {
+            padding: 14px;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .sent-crypto-btn:hover {
+            background-color: #2f9e44;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(64, 192, 87, 0.3);
+        }
+        
+        .cancel-crypto-btn {
+            padding: 14px;
+            background-color: transparent;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .cancel-crypto-btn:hover {
+            background-color: var(--danger);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Crypto Confirmation Page Styles */
+        #cryptoConfirmationPage {
+            display: none;
+            max-width: 480px;
+            width: 100%;
+            background-color: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .crypto-confirmation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: white;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .crypto-confirmation-header-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .crypto-confirmation-user-email {
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+        
+        .crypto-confirmation-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2e7d32;
+        }
+        
+        .crypto-confirmation-content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .crypto-confirmation-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .crypto-confirmation-message {
+            color: var(--gray);
+            margin-bottom: 25px;
+            font-size: 15px;
+        }
+        
+        .crypto-status-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 25px;
+        }
+        
+        .crypto-status-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .crypto-status-label {
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 8px;
+        }
+        
+        .crypto-status-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .crypto-sent-icon {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .crypto-received-icon {
+            background-color: #e9ecef;
+            color: var(--gray);
+        }
+        
+        .crypto-waiting-time {
+            margin: 25px 0;
+            color: var(--dark);
+            font-size: 15px;
+        }
+        
+        .crypto-waiting-countdown {
+            color: var(--success);
+            font-weight: 700;
+            font-size: 18px;
+            margin-top: 5px;
+        }
+        
+        .crypto-confirmation-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        .show-wallet-btn {
+            padding: 14px;
+            background-color: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .show-wallet-btn:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .crypto-confirmation-cancel-btn {
+            padding: 14px;
+            background-color: transparent;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .crypto-confirmation-cancel-btn:hover {
+            background-color: var(--danger);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .crypto-security-footer {
+            text-align: center;
+            padding: 15px;
+            color: var(--gray);
+            font-size: 12px;
+            border-top: 1px solid #e9ecef;
+            margin-top: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        /* JivoChat Floating Button */
+        .jivo-chat-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #4c6ef5;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(76, 110, 245, 0.5);
+            cursor: pointer;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+        
+        .jivo-chat-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(76, 110, 245, 0.7);
+        }
+        
+        .jivo-chat-button i {
+            color: white;
+            font-size: 24px;
+        }
+        
+        .online-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 12px;
+            height: 12px;
+            background-color: #40c057;
+            border-radius: 50%;
+            border: 2px solid white;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(64, 192, 87, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(64, 192, 87, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(64, 192, 87, 0);
+            }
+        }
+        
+        /* JivoChat Page */
+        #jivoChatPage {
+            display: none;
+            max-width: 480px;
+            width: 100%;
+            background-color: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            animation: fadeIn 0.5s ease;
+            height: 80vh;
+        }
+        
+        .jivo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .jivo-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .jivo-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+        
+        .jivo-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .jivo-content {
+            height: calc(100% - 60px);
+            padding: 0;
+        }
+        
+        .jivo-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div id="loader">
+        <div class="loader-circle"></div>
+        <div class="loader-text">Preparing Secure Checkout...</div>
+    </div>
+    
+    <!-- Alert -->
+    <div class="alert" id="alert">
+        <i class="fas fa-exclamation-circle"></i>
+        <span id="alert-message">Please fill all required fields</span>
+    </div>
+    
+    <!-- JivoChat Floating Button -->
+    <div class="jivo-chat-button" id="jivoChatButton">
+        <div class="online-indicator"></div>
+        <i class="fas fa-comments"></i>
+    </div>
+    
+    <!-- Checkout Page -->
+    <div class="container" id="checkoutPage">
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <img src="https://iili.io/fJ7mpst.jpg" alt="ProBank Logo">
+                <span></span>
+            </div>
+            <div class="header-title">Continue Checkout</div>
+            <div class="flag-container" id="flagDropdown">
+                <img src="https://flagcdn.com/w80/ng.png" alt="Nigeria Flag" class="flag">
+                <div class="dropdown-content" id="flagMenu">
+                    <a href="#" data-code="+234" data-flag="ng"><img src="https://flagcdn.com/w80/ng.png" alt="Nigeria"> Nigeria (+234)</a>
+                    <a href="#" data-code="+1" data-flag="us"><img src="https://flagcdn.com/w80/us.png" alt="USA"> USA (+1)</a>
+                    <a href="#" data-code="+44" data-flag="gb"><img src="https://flagcdn.com/w80/gb.png" alt="UK"> UK (+44)</a>
+                    <a href="#" data-code="+49" data-flag="de"><img src="https://flagcdn.com/w80/de.png" alt="Germany"> Germany (+49)</a>
+                    <a href="#" data-code="+33" data-flag="fr"><img src="https://flagcdn.com/w80/fr.png" alt="France"> France (+33)</a>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Product Section -->
+        <section class="product-section">
+            <div class="product-image">
+                <img src="https://iili.io/fTRB2EB.jpg" alt="ProBank Activation Key">
+            </div>
+            <div class="product-details">
+                <h2>Xcaret100 Tools</h2>
+                <div class="product-price">20.00</div>
+            </div>
+        </section>
+        
+        <!-- Form Section -->
+        <section class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-user-circle"></i>
+                Personal Info
+            </h3>
+            <p class="section-subtitle">Complete your purchase by filling in the following details</p>
+            
+            <form id="checkoutForm">
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" placeholder="Enter your Full Name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your Email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone number (Provide WhatsApp number if available)</label>
+                    <div class="phone-input">
+                        <select id="countryCode">
+                            <option value="+234">+234 (Nigeria)</option>
+                            <option value="+1">+1 (USA)</option>
+                            <option value="+44">+44 (UK)</option>
+                            <option value="+49">+49 (Germany)</option>
+                            <option value="+33">+33 (France)</option>
+                        </select>
+                        <input type="tel" id="phone" placeholder="Enter your phone number" required>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Payment Method -->
+            <div class="payment-method">
+                <h3 class="section-title">
+                    <i class="fas fa-credit-card"></i>
+                    Payment Method
+                </h3>
+                <p class="section-subtitle">Select your preferred payment method</p>
+                
+                <div class="payment-options">
+                    <div class="payment-option" data-method="crypto">
+                        <i class="fas fa-coins payment-icon crypto-icon"></i>
+                        <span>Crypto Payment</span>
+                    </div>
+                    <div class="payment-option" data-method="bank">
+                        <i class="fas fa-university payment-icon bank-icon"></i>
+                        <span>Bank Transfer</span>
+                    </div>
+                </div>
+                
+                <div class="coupon-section">
+                    <span>Have a Coupon?</span>
+                    <div class="coupon-input">
+                        <input type="text" placeholder="Enter coupon code">
+                        <button class="coupon-btn">Apply</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span>$20.00</span>
+                </div>
+                <div class="summary-row">
+                    <span>Transaction fees:</span>
+                    <span>$2.55</span>
+                </div>
+                <div class="summary-row">
+                    <span>Tax:</span>
+                    <span>$0.00</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total:</span>
+                    <span>$22.55</span>
+                </div>
+            </div>
+            
+            <!-- Access Message -->
+            <p class="access-message">
+                <i class="fas fa-bolt"></i>
+                Get instant access to your product once your payment is successful!
+            </p>
+            
+            <!-- Pay Now Button -->
+            <button id="payNow" class="pay-now-btn" disabled>
+                <i class="fas fa-lock"></i>
+                Pay Now
+            </button>
+        </section>
+        
+        <!-- Footer -->
+        <footer>
+            <p>© 2025 Secured Pay. All rights reserved. | Secure Payment Processing</p>
+        </footer>
+    </div>
+    
+    <!-- Bank Payment Page -->
+    <div id="bankPaymentPage">
+        <!-- Header -->
+        <header class="bank-header">
+            <div class="logo">
+                <img src="https://iili.io/fJ7mpst.jpg" alt="ProBank Logo">
+                <span></span>
+            </div>
+            <div class="bank-header-info">
+                <div class="bank-user-email" id="bankUserEmail"></div>
+                <div class="bank-amount" id="bankAmount">Pay ₦0.00</div>
+            </div>
+        </header>
+        
+        <!-- Bank Content -->
+        <section class="bank-content">
+            <h2 class="bank-title">Transfer NGN <span id="bankTransferAmount">0.00</span> to Baobabmicrofi/Daniel</h2>
+            
+            <div class="bank-info">
+                <div class="info-group">
+                    <div class="info-label">BANK NAME</div>
+                    <div class="info-value">Paystack - Titan</div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">ACCOUNT NUMBER</div>
+                    <div class="info-value"> 9947550950 </div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">AMOUNT</div>
+                    <div class="info-value">NGN <span id="bankInfoAmount">0.00</span></div>
+                </div>
+            </div>
+            
+            <p class="transfer-instruction">
+                Make transfer to the account above to complete purchase. 
+                <span class="countdown" id="countdown">30:00</span>
+            </p>
+            
+            <div class="rate-update">
+                <i class="fas fa-sync-alt"></i>
+                <span id="bankLastUpdate">Rates update every 30 seconds</span>
+            </div>
+            
+            <div class="bank-buttons">
+                <button class="sent-money-btn" id="sentMoneyBtn">
+                    <i class="fas fa-check-circle"></i> I've sent the Money
+                </button>
+                <button class="cancel-payment-btn" id="cancelPaymentBtn">
+                    <i class="fas fa-times"></i> Cancel Payment
+                </button>
+            </div>
+        </section>
+        
+        <!-- Footer -->
+        <footer>
+            <p>© 2025 Secured Pay. All rights reserved. | Secure Payment Processing</p>
+        </footer>
+    </div>
+    
+    <!-- Payment Confirmation Page -->
+    <div id="paymentConfirmationPage">
+        <!-- Header -->
+        <header class="confirmation-header">
+            <div class="logo">
+                <img src="https://iili.io/fJ7mpst.jpg" alt="ProBank Logo">
+                <span></span>
+            </div>
+            <div class="confirmation-header-info">
+                <div class="confirmation-user-email" id="confirmationUserEmail"></div>
+                <div class="confirmation-amount" id="confirmationAmount">Pay ₦0.00</div>
+            </div>
+        </header>
+        
+        <!-- Confirmation Content -->
+        <section class="confirmation-content">
+            <h2 class="confirmation-title">We're waiting to confirm your transfer.</h2>
+            <p class="confirmation-message">This can take a few minutes</p>
+            
+            <div class="status-indicators">
+                <div class="status-indicator">
+                    <div class="status-label">Sent</div>
+                    <div class="status-icon sent-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-label">Received</div>
+                    <div class="status-icon received-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="waiting-time">
+                Please wait for <span class="waiting-countdown" id="waitingCountdown">9:50</span> minutes
+            </div>
+            
+            <div class="confirmation-buttons">
+                <button class="show-account-btn" id="showAccountBtn">
+                    Show account number
+                </button>
+                <button class="confirmation-cancel-btn" id="confirmationCancelBtn">
+                    Cancel Payment
+                </button>
+            </div>
+            
+            <div class="security-footer">
+                Secured by <strong>Paystack</strong>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Crypto Payment Page -->
+    <div id="cryptoPaymentPage">
+        <!-- Header -->
+        <header class="crypto-header">
+            <div class="logo">
+                <img src="https://iili.io/fJ7mpst.jpg" alt="ProBank Logo">
+                <span></span>
+            </div>
+            <div class="crypto-header-info">
+                <div class="crypto-user-email" id="cryptoUserEmail"></div>
+                <div class="crypto-amount" id="cryptoAmount">Pay $22.55</div>
+            </div>
+        </header>
+        
+        <!-- Crypto Content -->
+        <section class="crypto-content">
+            <h2 class="crypto-title">Pay with Cryptocurrency</h2>
+            <p class="crypto-subtitle">Select your preferred cryptocurrency to complete payment</p>
+            
+            <div class="crypto-amount-info">
+                <div class="usd-amount">$22.55</div>
+                <div class="crypto-conversion">
+                    <div class="crypto-option">
+                        <div class="crypto-amount-value" id="btcAmount">0.00065608 BTC</div>
+                        <div class="crypto-amount-label">Bitcoin</div>
+                    </div>
+                    <div class="crypto-option">
+                        <div class="crypto-amount-value" id="usdtAmount">22.55 USDT</div>
+                        <div class="crypto-amount-label">USDT (TRC20)</div>
+                    </div>
+                </div>
+                <div class="rate-update">
+                    <i class="fas fa-sync-alt"></i>
+                    <span id="lastUpdate">Rates update every 30 seconds</span>
+                </div>
+            </div>
+            
+            <div class="crypto-tabs">
+                <div class="crypto-tab active btc-tab" data-crypto="btc">
+                    <i class="fab fa-bitcoin"></i> Bitcoin
+                </div>
+                <div class="crypto-tab usdt-tab" data-crypto="usdt">
+                    <i class="fas fa-coins"></i> USDT (TRC20)
+                </div>
+            </div>
+            
+            <div class="crypto-wallet active" id="btcWallet">
+                <div class="wallet-label">Send exactly <span id="btcExactAmount">0.00065608 BTC</span> to:</div>
+                <div class="wallet-address">
+                    <span id="btcAddress">3H1veozQ9KXgG5pPXszRawoNUjqTm3ULoe</span>
+                    <button class="copy-btn" data-address="3H1veozQ9KXgG5pPXszRawoNUjqTm3ULoe">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+                <div class="qr-code">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=bitcoin:3H1veozQ9KXgG5pPXszRawoNUjqTm3ULoe?amount=0.00065608" alt="BTC QR Code">
+                </div>
+            </div>
+            
+            <div class="crypto-wallet" id="usdtWallet">
+                <div class="wallet-label">Send exactly <span id="usdtExactAmount">22.55 USDT</span> to:</div>
+                <div class="wallet-address">
+                    <span id="usdtAddress">TQ7v5X6HLGDL7Vj5j8W6kKZ7Vv7tKZ9j9X</span>
+                    <button class="copy-btn" data-address="TQ7v5X6HLGDL7Vj5j8W6kKZ7Vv7tKZ9j9X">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+                <div class="qr-code">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=TQ7v5X6HLGDL7Vj5j8W6kKZ7Vv7tKZ9j9X" alt="USDT QR Code">
+                </div>
+            </div>
+            
+            <p class="crypto-instruction">
+                Send the exact amount to the address above to complete your purchase. 
+                <span class="crypto-countdown" id="cryptoCountdown">30:00</span>
+            </p>
+            
+            <div class="crypto-buttons">
+                <button class="sent-crypto-btn" id="sentCryptoBtn">
+                    <i class="fas fa-check-circle"></i> I've sent the Crypto
+                </button>
+                <button class="cancel-crypto-btn" id="cancelCryptoBtn">
+                    <i class="fas fa-times"></i> Cancel Payment
+                </button>
+            </div>
+        </section>
+        
+        <!-- Footer -->
+        <footer>
+            <p>© 2025 Secured Pay. All rights reserved. | Secure Payment Processing</p>
+        </footer>
+    </div>
+    
+    <!-- Crypto Confirmation Page -->
+    <div id="cryptoConfirmationPage">
+        <!-- Header -->
+        <header class="crypto-confirmation-header">
+            <div class="logo">
+                <img src="https://iili.io/fJ7mpst.jpg" alt="ProBank Logo">
+                <span></span>
+            </div>
+            <div class="crypto-confirmation-header-info">
+                <div class="crypto-confirmation-user-email" id="cryptoConfirmationUserEmail"></div>
+                <div class="crypto-confirmation-amount" id="cryptoConfirmationAmount">Pay 0.00065608 BTC</div>
+            </div>
+        </header>
+        
+        <!-- Crypto Confirmation Content -->
+        <section class="crypto-confirmation-content">
+            <h2 class="crypto-confirmation-title">We're confirming your cryptocurrency payment.</h2>
+            <p class="crypto-confirmation-message">This can take a few minutes</p>
+            
+            <div class="crypto-status-indicators">
+                <div class="crypto-status-indicator">
+                    <div class="crypto-status-label">Sent</div>
+                    <div class="crypto-status-icon crypto-sent-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+                <div class="crypto-status-indicator">
+                    <div class="crypto-status-label">Confirmed</div>
+                    <div class="crypto-status-icon crypto-received-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="crypto-waiting-time">
+                Please wait for <span class="crypto-waiting-countdown" id="cryptoWaitingCountdown">10:00</span> minutes
+            </div>
+            
+            <div class="crypto-confirmation-buttons">
+                <button class="show-wallet-btn" id="showWalletBtn">
+                    Show wallet address
+                </button>
+                <button class="crypto-confirmation-cancel-btn" id="cryptoConfirmationCancelBtn">
+                    Cancel Payment
+                </button>
+            </div>
+            
+            <div class="crypto-security-footer">
+                Secured by <strong>Blockchain</strong>
+            </div>
+        </section>
+    </div>
+    
+    <!-- JivoChat Page -->
+    <div id="jivoChatPage">
+        <!-- Header -->
+        <header class="jivo-header">
+            <div class="jivo-title">Live Support</div>
+            <button class="jivo-close" id="jivoClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </header>
+        
+        <!-- JivoChat Content -->
+        <section class="jivo-content">
+            <iframe class="jivo-iframe" src="https://jivo.chat/jEy47HCRuw" frameborder="0"></iframe>
+        </section>
+    </div>
+
+    <script>
+        // Global variables to store payment data
+        let paymentData = {
+            email: '',
+            amount: '₦0.00',
+            usdAmount: 22.55,
+            cryptoAmount: '0.00065608 BTC',
+            selectedCrypto: 'btc',
+            btcRate: 0,
+            usdtRate: 0,
+            ngnRate: 0,
+            ngnAmount: 0
+        };
+
+        // Show loader for 7 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                document.getElementById('loader').style.display = 'none';
+                document.body.style.background = 'linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%)';
+            }, 7000);
+            
+            // Flag dropdown functionality
+            const flagDropdown = document.getElementById('flagDropdown');
+            const flagMenu = document.getElementById('flagMenu');
+            const currentFlag = flagDropdown.querySelector('.flag');
+            const countryCode = document.getElementById('countryCode');
+            
+            flagDropdown.addEventListener('click', function() {
+                flagMenu.style.display = flagMenu.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!flagDropdown.contains(event.target)) {
+                    flagMenu.style.display = 'none';
+                }
+            });
+            
+            // Change flag when selecting from dropdown
+            flagMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const flagCode = this.getAttribute('data-flag');
+                    const code = this.getAttribute('data-code');
+                    
+                    // Update flag
+                    currentFlag.src = `https://flagcdn.com/w80/${flagCode}.png`;
+                    
+                    // Update country code in dropdown
+                    countryCode.value = code;
+                    
+                    // Close dropdown
+                    flagMenu.style.display = 'none';
+                });
+            });
+            
+            // Payment method selection
+            const paymentOptions = document.querySelectorAll('.payment-option');
+            let selectedPayment = null;
+            
+            paymentOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove selected class from all options
+                    paymentOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // Add selected class to clicked option
+                    this.classList.add('selected');
+                    selectedPayment = this.getAttribute('data-method');
+                    
+                    // Enable pay now button if form is valid
+                    validateForm();
+                });
+            });
+            
+            // Form validation
+            const form = document.getElementById('checkoutForm');
+            const payNowBtn = document.getElementById('payNow');
+            const alert = document.getElementById('alert');
+            const alertMessage = document.getElementById('alert-message');
+            
+            function validateForm() {
+                const fullName = document.getElementById('fullName').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                if (fullName && emailRegex.test(email) && phone && selectedPayment) {
+                    payNowBtn.disabled = false;
+                    return true;
+                } else {
+                    payNowBtn.disabled = true;
+                    return false;
+                }
+            }
+            
+            // Show alert function
+            function showAlert(message) {
+                alertMessage.textContent = message;
+                alert.classList.add('show');
+                
+                setTimeout(function() {
+                    alert.classList.remove('show');
+                }, 4000);
+            }
+            
+            // Add event listeners to form inputs
+            form.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', validateForm);
+            });
+            
+            // JivoChat Button Functionality
+            const jivoChatButton = document.getElementById('jivoChatButton');
+            const jivoChatPage = document.getElementById('jivoChatPage');
+            const jivoClose = document.getElementById('jivoClose');
+            
+            jivoChatButton.addEventListener('click', function() {
+                // Hide all other pages
+                document.getElementById('checkoutPage').style.display = 'none';
+                document.getElementById('bankPaymentPage').style.display = 'none';
+                document.getElementById('paymentConfirmationPage').style.display = 'none';
+                document.getElementById('cryptoPaymentPage').style.display = 'none';
+                document.getElementById('cryptoConfirmationPage').style.display = 'none';
+                
+                // Show JivoChat page
+                jivoChatPage.style.display = 'block';
+                jivoChatButton.style.display = 'none';
+            });
+            
+            jivoClose.addEventListener('click', function() {
+                // Hide JivoChat page
+                jivoChatPage.style.display = 'none';
+                
+                // Show checkout page and JivoChat button
+                document.getElementById('checkoutPage').style.display = 'block';
+                jivoChatButton.style.display = 'flex';
+            });
+            
+            // Fetch cryptocurrency rates
+            async function fetchCryptoRates() {
+                try {
+                    // For BTC rate
+                    const btcResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+                    const btcData = await btcResponse.json();
+                    paymentData.btcRate = btcData.bitcoin.usd;
+                    
+                    // For USDT rate (Tether)
+                    const usdtResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd');
+                    const usdtData = await usdtResponse.json();
+                    paymentData.usdtRate = usdtData.tether.usd;
+                    
+                    // Update the display
+                    updateCryptoDisplay();
+                    
+                    // Update last update time
+                    const now = new Date();
+                    document.getElementById('lastUpdate').textContent = `Last updated: ${now.toLocaleTimeString()}`;
+                } catch (error) {
+                    console.error('Error fetching crypto rates:', error);
+                    // Use fallback rates if API fails
+                    paymentData.btcRate = 65000; // Fallback BTC rate
+                    paymentData.usdtRate = 1; // USDT should be close to 1
+                    updateCryptoDisplay();
+                }
+            }
+            
+            // Update crypto display with current rates
+            function updateCryptoDisplay() {
+                if (paymentData.btcRate > 0) {
+                    const btcAmount = paymentData.usdAmount / paymentData.btcRate;
+                    const formattedBtc = btcAmount.toFixed(8);
+                    document.getElementById('btcAmount').textContent = `${formattedBtc} BTC`;
+                    document.getElementById('btcExactAmount').textContent = `${formattedBtc} BTC`;
+                    
+                    // Update payment data
+                    if (paymentData.selectedCrypto === 'btc') {
+                        paymentData.cryptoAmount = `${formattedBtc} BTC`;
+                    }
+                }
+                
+                if (paymentData.usdtRate > 0) {
+                    const usdtAmount = paymentData.usdAmount / paymentData.usdtRate;
+                    const formattedUsdt = usdtAmount.toFixed(2);
+                    document.getElementById('usdtAmount').textContent = `${formattedUsdt} USDT`;
+                    document.getElementById('usdtExactAmount').textContent = `${formattedUsdt} USDT`;
+                    
+                    // Update payment data
+                    if (paymentData.selectedCrypto === 'usdt') {
+                        paymentData.cryptoAmount = `${formattedUsdt} USDT`;
+                    }
+                }
+            }
+            
+            // Fetch USD to NGN conversion rate
+            async function fetchNGNRate() {
+                try {
+                    // Using a free currency conversion API
+                    const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                    const data = await response.json();
+                    paymentData.ngnRate = data.rates.NGN;
+                    
+                    // Calculate NGN amount
+                    paymentData.ngnAmount = (paymentData.usdAmount * paymentData.ngnRate).toFixed(2);
+                    
+                    // Update the display
+                    updateBankDisplay();
+                    
+                    // Update last update time
+                    const now = new Date();
+                    document.getElementById('bankLastUpdate').textContent = `Last updated: ${now.toLocaleTimeString()}`;
+                } catch (error) {
+                    console.error('Error fetching NGN rate:', error);
+                    // Use fallback rate if API fails
+                    paymentData.ngnRate = 1500; // Fallback NGN rate
+                    paymentData.ngnAmount = (paymentData.usdAmount * paymentData.ngnRate).toFixed(2);
+                    updateBankDisplay();
+                }
+            }
+            
+            // Update bank display with current NGN amount
+            function updateBankDisplay() {
+                if (paymentData.ngnAmount > 0) {
+                    const formattedNgn = parseFloat(paymentData.ngnAmount).toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                    
+                    document.getElementById('bankAmount').textContent = `Pay ₦${formattedNgn}`;
+                    document.getElementById('bankTransferAmount').textContent = formattedNgn;
+                    document.getElementById('bankInfoAmount').textContent = formattedNgn;
+                    
+                    // Update payment data
+                    paymentData.amount = `₦${formattedNgn}`;
+                }
+            }
+            
+            // Pay Now button functionality
+            payNowBtn.addEventListener('click', function() {
+                if (!validateForm()) {
+                    showAlert("Please complete all required fields before proceeding with payment.");
+                    return;
+                }
+                
+                // Store user email for later use
+                paymentData.email = document.getElementById('email').value;
+                
+                // Redirect to selected payment method
+                if (selectedPayment === 'crypto') {
+                    // Show loading for 4 seconds
+                    document.getElementById('loader').style.display = 'flex';
+                    document.getElementById('loader').querySelector('.loader-text').textContent = 'Processing Cryptocurrency Payment...';
+                    
+                    setTimeout(function() {
+                        document.getElementById('loader').style.display = 'none';
+                        
+                        // Show crypto payment page
+                        document.getElementById('checkoutPage').style.display = 'none';
+                        document.getElementById('cryptoPaymentPage').style.display = 'block';
+                        jivoChatButton.style.display = 'none';
+                        
+                        // Set user email in crypto payment page
+                        document.getElementById('cryptoUserEmail').textContent = paymentData.email;
+                        
+                        // Fetch initial crypto rates
+                        fetchCryptoRates();
+                        
+                        // Start countdown timer
+                        startCryptoCountdown();
+                        
+                        // Set interval to update rates every 30 seconds
+                        setInterval(fetchCryptoRates, 30000);
+                    }, 4000);
+                } else if (selectedPayment === 'bank') {
+                    // Show loading for 3 seconds
+                    document.getElementById('loader').style.display = 'flex';
+                    document.getElementById('loader').querySelector('.loader-text').textContent = 'Processing Bank Transfer...';
+                    
+                    setTimeout(function() {
+                        document.getElementById('loader').style.display = 'none';
+                        
+                        // Show bank payment page
+                        document.getElementById('checkoutPage').style.display = 'none';
+                        document.getElementById('bankPaymentPage').style.display = 'block';
+                        jivoChatButton.style.display = 'none';
+                        
+                        // Set user email in bank payment page
+                        document.getElementById('bankUserEmail').textContent = paymentData.email;
+                        
+                        // Fetch initial NGN rate
+                        fetchNGNRate();
+                        
+                        // Start countdown timer
+                        startCountdown();
+                        
+                        // Set interval to update rates every 30 seconds
+                        setInterval(fetchNGNRate, 30000);
+                    }, 3000);
+                }
+            });
+            
+            // Coupon button functionality
+            document.querySelector('.coupon-btn').addEventListener('click', function() {
+                showAlert("Coupon code applied successfully! You saved $10.");
+            });
+            
+            // Crypto Payment Page Functionality
+            const cryptoCountdownElement = document.getElementById('cryptoCountdown');
+            const sentCryptoBtn = document.getElementById('sentCryptoBtn');
+            const cancelCryptoBtn = document.getElementById('cancelCryptoBtn');
+            const cryptoTabs = document.querySelectorAll('.crypto-tab');
+            const cryptoWallets = document.querySelectorAll('.crypto-wallet');
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            
+            let cryptoCountdownInterval;
+            
+            function startCryptoCountdown() {
+                let timeLeft = 30 * 60; // 30 minutes in seconds
+                
+                cryptoCountdownInterval = setInterval(function() {
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    
+                    cryptoCountdownElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(cryptoCountdownInterval);
+                        // Time's up, go back to checkout page
+                        document.getElementById('cryptoPaymentPage').style.display = 'none';
+                        document.getElementById('checkoutPage').style.display = 'block';
+                        jivoChatButton.style.display = 'flex';
+                        showAlert("Payment time expired. Please try again.");
+                    }
+                    
+                    timeLeft--;
+                }, 1000);
+            }
+            
+            // Crypto tab switching
+            cryptoTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const cryptoType = this.getAttribute('data-crypto');
+                    
+                    // Update active tab
+                    cryptoTabs.forEach(t => {
+                        t.classList.remove('active');
+                        t.classList.remove('btc-tab');
+                        t.classList.remove('usdt-tab');
+                    });
+                    this.classList.add('active');
+                    
+                    // Add specific class for styling
+                    if (cryptoType === 'btc') {
+                        this.classList.add('btc-tab');
+                    } else if (cryptoType === 'usdt') {
+                        this.classList.add('usdt-tab');
+                    }
+                    
+                    // Show corresponding wallet
+                    cryptoWallets.forEach(wallet => {
+                        wallet.classList.remove('active');
+                        if (wallet.id === `${cryptoType}Wallet`) {
+                            wallet.classList.add('active');
+                        }
+                    });
+                    
+                    // Update selected crypto and amount
+                    paymentData.selectedCrypto = cryptoType;
+                    if (cryptoType === 'btc') {
+                        const btcAmount = paymentData.usdAmount / paymentData.btcRate;
+                        const formattedBtc = btcAmount.toFixed(8);
+                        paymentData.cryptoAmount = `${formattedBtc} BTC`;
+                    } else if (cryptoType === 'usdt') {
+                        const usdtAmount = paymentData.usdAmount / paymentData.usdtRate;
+                        const formattedUsdt = usdtAmount.toFixed(2);
+                        paymentData.cryptoAmount = `${formattedUsdt} USDT`;
+                    }
+                });
+            });
+            
+            // Copy address functionality
+            copyButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const address = this.getAttribute('data-address');
+                    navigator.clipboard.writeText(address).then(function() {
+                        showAlert("Address copied to clipboard!");
+                    }, function(err) {
+                        console.error('Could not copy text: ', err);
+                    });
+                });
+            });
+            
+            // Sent Crypto button functionality
+            sentCryptoBtn.addEventListener('click', function() {
+                clearInterval(cryptoCountdownInterval);
+                
+                // Show crypto confirmation page
+                document.getElementById('cryptoPaymentPage').style.display = 'none';
+                document.getElementById('cryptoConfirmationPage').style.display = 'block';
+                
+                // Set user email and amount in confirmation page
+                document.getElementById('cryptoConfirmationUserEmail').textContent = paymentData.email;
+                document.getElementById('cryptoConfirmationAmount').textContent = "Pay " + paymentData.cryptoAmount;
+                
+                // Start waiting countdown
+                startCryptoWaitingCountdown();
+            });
+            
+            // Cancel Crypto button functionality
+            cancelCryptoBtn.addEventListener('click', function() {
+                clearInterval(cryptoCountdownInterval);
+                document.getElementById('cryptoPaymentPage').style.display = 'none';
+                document.getElementById('checkoutPage').style.display = 'block';
+                jivoChatButton.style.display = 'flex';
+                showAlert("Payment cancelled. You can try again anytime.");
+            });
+            
+            // Crypto Confirmation Page Functionality
+            const showWalletBtn = document.getElementById('showWalletBtn');
+            const cryptoConfirmationCancelBtn = document.getElementById('cryptoConfirmationCancelBtn');
+            const cryptoWaitingCountdownElement = document.getElementById('cryptoWaitingCountdown');
+            
+            let cryptoWaitingCountdownInterval;
+            
+            function startCryptoWaitingCountdown() {
+                let timeLeft = 10 * 60; // 10 minutes in seconds
+                
+                cryptoWaitingCountdownInterval = setInterval(function() {
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    
+                    cryptoWaitingCountdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(cryptoWaitingCountdownInterval);
+                        // Time's up, go back to checkout page
+                        document.getElementById('cryptoConfirmationPage').style.display = 'none';
+                        document.getElementById('checkoutPage').style.display = 'block';
+                        jivoChatButton.style.display = 'flex';
+                        showAlert("Payment confirmation time expired. Please contact support if you've made the payment.");
+                    }
+                    
+                    timeLeft--;
+                }, 1000);
+            }
+            
+            // Show Wallet button functionality
+            showWalletBtn.addEventListener('click', function() {
+                if (paymentData.selectedCrypto === 'btc') {
+                    showAlert("Bitcoin Address: 3H1veozQ9KXgG5pPXszRawoNUjqTm3ULoe | Amount: " + paymentData.cryptoAmount);
+                } else if (paymentData.selectedCrypto === 'usdt') {
+                    showAlert("USDT Address: TQ7v5X6HLGDL7Vj5j8W6kKZ7Vv7tKZ9j9X | Amount: " + paymentData.cryptoAmount);
+                }
+            });
+            
+            // Crypto Confirmation Cancel button functionality
+            cryptoConfirmationCancelBtn.addEventListener('click', function() {
+                clearInterval(cryptoWaitingCountdownInterval);
+                document.getElementById('cryptoConfirmationPage').style.display = 'none';
+                document.getElementById('checkoutPage').style.display = 'block';
+                jivoChatButton.style.display = 'flex';
+                showAlert("Payment cancelled. You can try again anytime.");
+            });
+            
+            // Bank Payment Page Functionality
+            const sentMoneyBtn = document.getElementById('sentMoneyBtn');
+            const cancelPaymentBtn = document.getElementById('cancelPaymentBtn');
+            const countdownElement = document.getElementById('countdown');
+            
+            let countdownInterval;
+            
+            function startCountdown() {
+                let timeLeft = 30 * 60; // 30 minutes in seconds
+                
+                countdownInterval = setInterval(function() {
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    
+                    countdownElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(countdownInterval);
+                        // Time's up, go back to checkout page
+                        document.getElementById('bankPaymentPage').style.display = 'none';
+                        document.getElementById('checkoutPage').style.display = 'block';
+                        jivoChatButton.style.display = 'flex';
+                        showAlert("Payment time expired. Please try again.");
+                    }
+                    
+                    timeLeft--;
+                }, 1000);
+            }
+            
+            // Sent Money button functionality
+            sentMoneyBtn.addEventListener('click', function() {
+                clearInterval(countdownInterval);
+                
+                // Show payment confirmation page
+                document.getElementById('bankPaymentPage').style.display = 'none';
+                document.getElementById('paymentConfirmationPage').style.display = 'block';
+                
+                // Set user email and amount in confirmation page
+                document.getElementById('confirmationUserEmail').textContent = paymentData.email;
+                document.getElementById('confirmationAmount').textContent = "Pay " + paymentData.amount;
+                
+                // Start waiting countdown
+                startWaitingCountdown();
+            });
+            
+            // Cancel Payment button functionality
+            cancelPaymentBtn.addEventListener('click', function() {
+                clearInterval(countdownInterval);
+                document.getElementById('bankPaymentPage').style.display = 'none';
+                document.getElementById('checkoutPage').style.display = 'block';
+                jivoChatButton.style.display = 'flex';
+                showAlert("Payment cancelled. You can try again anytime.");
+            });
+            
+            // Payment Confirmation Page Functionality
+            const showAccountBtn = document.getElementById('showAccountBtn');
+            const confirmationCancelBtn = document.getElementById('confirmationCancelBtn');
+            const waitingCountdownElement = document.getElementById('waitingCountdown');
+            
+            let waitingCountdownInterval;
+            
+            function startWaitingCountdown() {
+                let timeLeft = 10 * 60; // 10 minutes in seconds
+                
+                waitingCountdownInterval = setInterval(function() {
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    
+                    waitingCountdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(waitingCountdownInterval);
+                        // Time's up, go back to checkout page
+                        document.getElementById('paymentConfirmationPage').style.display = 'none';
+                        document.getElementById('checkoutPage').style.display = 'block';
+                        jivoChatButton.style.display = 'flex';
+                        showAlert("Payment confirmation time expired. Please contact support if you've made the payment.");
+                    }
+                    
+                    timeLeft--;
+                }, 1000);
+            }
+            
+            // Show Account button functionality
+            showAccountBtn.addEventListener('click', function() {
+                showAlert("Account Number: 9947550950 | Bank: Paystack - Titan | Amount: " + paymentData.amount);
+            });
+            
+            // Confirmation Cancel button functionality
+            confirmationCancelBtn.addEventListener('click', function() {
+                clearInterval(waitingCountdownInterval);
+                document.getElementById('paymentConfirmationPage').style.display = 'none';
+                document.getElementById('checkoutPage').style.display = 'block';
+                jivoChatButton.style.display = 'flex';
+                showAlert("Payment cancelled. You can try again anytime.");
+            });
+        });
+    </script>
+</body>
+</html>
